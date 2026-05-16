@@ -1,0 +1,71 @@
+<div class="custom_text multiple_text">
+<div class="container page-width">
+<div class="flex_wrp">
+<div class="heading_sec">
+<h3>{{ section.settings.heading }}</h3>
+</div>
+<div class="text_sec">
+<div class="outer_loop">
+{% for block in section.blocks %}
+<div class="inner_loop">
+<h3>{{ block.settings.heading }}</h3>
+<div class="text">
+{{ block.settings.text }}
+</div>
+<div class="btn_sec">
+<a href="{{ block.settings.link }}">{{ block.settings.btn_lbl}}</a>
+</div>
+</div>
+</div>
+{% endfor %}
+</div>
+</div>
+</div>
+</div>
+
+{% schema %}
+{
+"name":"Custom multiple Text",
+"settings":[
+{
+"type":"text",
+"id":"heading",
+"label":"Heading"
+}
+],
+"blocks":[
+{
+"type":"text",    
+"name":"Add Text",
+"settings":[
+    {
+"type":"text",
+"id":"heading",
+"label":"Heading"
+},
+{
+"type":"textarea",
+"id":"text",
+"label":"Text"
+},
+{
+"type":"text",
+"id":"btn_lbl",
+"label":"Button Label"
+},
+{
+"type":"url",
+"id":"link",
+"label":"Link"
+}
+]
+}
+],
+"presets":[
+{
+"name":"Custom multiple Text",
+"settings":{}
+}
+]
+}
+{% endschema %}

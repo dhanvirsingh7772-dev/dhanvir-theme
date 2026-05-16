@@ -1,0 +1,177 @@
+
+<div class="header-megamenu" data-dropdown="{{ section.settings.menu_title }}">
+  {% for block in section.blocks %}
+  {% if block.type == 'menu' %}
+  <div class="header-megamenu-listing">  
+    <h4>{{ block.settings.title }}</h4>
+  <ul class="menus">
+{% for link in linklists[block.settings.menu].links %}
+<li>
+<a href="{{ link.url }}">{{ link.title }}</a>
+</li>
+{% endfor %}
+      <div class="txt_sec">
+    {{block.settings.add}}
+    </div>
+</ul>
+  </div>
+  {% endif %}
+  {% if block.type == 'image' %}
+  <div class="header-megamenu-images">
+    {% if block.settings.link != blank %}<a href="{{ block.settings.link }}">{% endif %}
+    {% if block.settings.image != blank %}
+      <div class="image">
+            <img src="{{ block.settings.image | img_url: 'master' }}">
+          </div>
+    {% else %}
+    <img src="{{ image | img_url: '200X' }}">
+    {% endif %}
+    
+    {% if block.settings.link != blank %}</a>{% endif %}
+      {% if block.settings.addimgtxt %}
+    <h5> {{ block.settings.addimgtxt }}</h5>
+     {% endif %}
+     {% if block.settings.addimg_link %}
+      <li><a class="extra" href="{{ block.settings.addimg_link }}">{{ block.settings.addimg }} <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+      {% endif %}
+  </div>
+  {% endif %}
+  {% if block.type == 'collection' %}
+  <div id="slideshow">
+  <div class="wrapper">
+    <div class="rslides_container">
+        <ul class="rslides" id="slider1"> 
+            
+            {% for product in collections[block.settings.feature_collection].products limit:2 %}
+              <li class="slideshow-item">
+                  <a href="{{ product.url }}"><img class="prdct_img" src="{{  product.featured_image | img_url: 'medium' | format: 'jpg' }}" alt="{{ block.settings.slide_heading }}"></a>            
+                <div class="quick_btn" style="display:none;"> <form method="post" action="/cart/add">
+  <input type="hidden" name="id" value="{{ product.variants.first.id }}" />
+    <div class="comn_sec">
+      <button value="Add to cart" class="quibtn"><span class="bg">Quick Buy</span></button>
+
+    </div>
+  </form> </div>                 
+                <h3 class="title">{{ product.title }}</h3>
+                  <h4 class="prce">{{ product.price | money | remove: '.00' }}</h4>
+                <span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+                
+                  
+              </li>
+
+            {% endfor %} 
+            </ul>
+        </div><!-- #slideshow-container -->
+    </div>
+</div>
+  {% endif %}
+  {% endfor %}
+</div>
+{% schema %}
+  {
+    "name": "First Mega Menu",
+	"settings": [
+	{
+	  "type": "text",
+	  "id": "menu_title",
+	  "label": "Megamenu Title"
+	}
+	],
+    "blocks": [
+	  {
+		"type": "menu",
+		"name": "Menu",
+		"settings": [
+		{
+		  "type": "text",
+		  "id": "title",
+		  "label": "Heading"
+		},
+		{
+		  "type": "link_list",
+		  "id": "menu",
+		  "label": "Menu"
+		},
+        {
+		  "type": "text",
+		  "id": "add",
+		  "label": "Additional Text"
+		},
+       {
+		  "type": "url",
+		  "id": "add_link",
+		  "label": "Additional Link"
+		}
+		]
+	  },
+      {
+        "type": "image",
+        "name": "Image",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          
+          {
+            "type": "url",
+            "id": "link",
+            "label": "Link"
+          },
+   {
+		  "type": "text",
+		  "id": "addimgtxt",
+		  "label": "Additional Text"
+		},
+       {
+		  "type": "text",
+		  "id": "addimg",
+		  "label": "Additional Text"
+		},
+       {
+		  "type": "url",
+		  "id": "addimg_link",
+		  "label": "Additional Link"
+		}
+        ]
+      },
+	  {
+		"type": "collection",
+		"name": "collection",
+		"settings": [
+ {
+            "type": "collection",
+            "id": "feature_collection",
+            "label": "Chose Collection to show on slideshow"
+        }
+]
+}
+
+    ]
+  }
+{% endschema %}
+
+
+
+<script>
+ $("ul#SiteNav>li").hover(function() {
+    $(this).toggleClass('active');
+ var menu_title = $(this).children("div.inner_title").attr('menu_title');
+    $('.comn_menu .header-megamenu').each(function() {
+  if( menu_title == $(this).attr('data-dropdown'))
+  // var mega_title = $('.header-megamenu').attr('data-dropdown') ;
+   // alert(mega_title);
+   // if(mega_title == menu_title)
+    {
+    //  alert("match");
+      $('ul#SiteNav li.active').append($(this));
+     // $(this).addClass('activemenu');
+    }
+                                                                                                    
+    else {
+   //  alert("Not match");
+    }
+    });
+    }); 
+</script>

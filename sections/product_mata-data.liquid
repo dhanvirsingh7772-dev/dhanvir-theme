@@ -1,0 +1,28 @@
+
+<div class="product_meta">
+TEST1
+{{ product.metafields.custom.multirow_info.value | json }}
+
+{% if product.metafields.custom.multirow_info %}
+{% for item in product.metafields.custom.multirow_info.value %}
+<div class="pro_meta" index="{{ forloop.index }}">
+<h3>{{ item.title }}</h3>
+<h5>{{ item.heading }}</h5>
+<p>{{ item.text }}</p>
+<img src="{{ item.image | img_url: 'master' }}" alt="{{ item.alt }}" />
+</div>
+{% endfor %}
+{% endif %}
+</div>
+{% schema %}
+{
+"name":"Product Meta Data",
+"settings":[],
+"presets":[
+{
+"name":"Product Meta Data",
+"settings":{}
+}
+]
+}
+{% endschema %}

@@ -1,0 +1,193 @@
+<div class="custom_coll-slider">
+<div class="page-width">
+<div class="heading_sec">
+<h3>{{ section.settings.heading }}</h3>
+</div>
+
+<div class="tabber_sec-top">
+<div class="outer_loop tabs">
+{% for block in section.blocks %}
+<div class="inner_loop tab-link {% if forloop.index == 1  %}current{% endif %}" data-tab="tab-{{ forloop.index }}">
+<h5>{{ block.settings.featured_coll }}</h5>
+</div>
+{% endfor %}
+</div>
+</div>
+
+<div class="content_sec">
+<div class="tabber_cont">
+{% for block in section.blocks %}
+{% assign main_coll = block.settings.featured_coll %}
+<div class="featured_coll slider_main {% if forloop.index == 1  %}current{% endif %}" id="tab-{{ forloop.index }}">
+{% for product in collections[main_coll].products %}
+<div class="prod_loop">
+<div class="product_sec">
+<div class="prod_img">
+<div class="image_sec">
+<img class="prdct_img" src="{{  product.featured_image | img_url: 'master' | format: 'jpg' }}" alt="{{ block.settings.slide_heading }}">
+      </div>
+</div>
+<div class="prod_meta">
+<h6>{{ main_coll.title }}</h6>
+quantity:{{ product.variants.first.inventory_quantity }} policy:{{ product.variants.first.inventory_policy  }}
+<h4><a href="{{product.url }}">{{ product.title }}</a>  </h4>
+<div class="pro_price">
+<span class="main_price">{{ product.price | money_with_currency }}</span>
+<span id="{{product.variants.first.id}}" class="cart_btn">ADD TO CART</span>
+</div>
+</div>
+</div>
+</div>
+{% endfor %}
+<!--div class="btn_sec">
+<a href="{{ main_coll.url }}">View All</a>
+</div-->
+</div>
+{% endfor %}
+
+</div>
+</div>
+<div>
+</div>
+
+
+{% schema %}
+{
+"name":"custom collection slider",
+"settings":[
+{
+"type":"text",
+"id":"heading",
+"label":"Heading"
+}
+],
+"blocks":[
+{
+"type":"collection",   
+"name":"add collection",
+"settings":[
+{
+"type":"collection",
+"id":"featured_coll",
+"label":"Collection"
+}
+]
+}
+],
+"presets":[
+{
+"name":"Custom Collection Slider",
+"settings":{
+}
+}
+]
+}
+{% endschema %}
+
+
+
+
+
+<script>
+    function slick_slide() {
+$('.slider_main.current').slick({
+  dots: true,
+  infinite: false,
+  speed: 300,
+  arrows:true,
+  slidesToShow: 4,
+  slidesToScroll: 4,
+  responsive: [
+    {
+      breakpoint: 1024,
+      settings: {
+        slidesToShow: 3,
+        slidesToScroll: 3,
+        infinite: true,
+        dots: true
+      }
+    },
+    {
+      breakpoint: 600,
+      settings: {
+        slidesToShow: 2,
+        slidesToScroll: 2
+      }
+    },
+    {
+      breakpoint: 480,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1
+      }
+    }
+  ]
+});
+}
+$(document).ready(function(){
+$('.outer_loop .inner_loop').click(function(){
+var tab_id = $(this).attr('data-tab');
+$('.outer_loop .inner_loop').removeClass('current');
+$('.featured_coll.current').slick('unslick');
+$('.featured_coll').removeClass('current');
+$(this).addClass('current');
+$("#"+tab_id).addClass('current');
+slick_slide();
+});
+slick_slide();
+});
+
+
+
+/*$(document).on('click','span.cart_btn',function(){
+var variant_id =  $(this).attr('id');
+var data = {
+"id": variant_id,
+"quantity": 1
+}
+$.ajax({
+type:'POST',
+url:'/cart/add.js',
+data:data,
+dataType: 'json',
+success: function() { 
+alert("Added");
+
+}
+
+});
+});
+*/
+
+
+
+
+</script>
+
+<style>
+  span.cart_btn {
+    display: block;
+    background: #000;
+    width: 100%;
+    max-width: 180px;
+    height: 52px;
+    color: #fff;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 52px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.featured_coll{
+			display: none;
+			background: #ededed;
+			padding: 15px;
+		}
+
+		.featured_coll.current{
+			display: inherit;
+		}
+        img.prdct_img {
+    width: 100%;
+}
+</style>

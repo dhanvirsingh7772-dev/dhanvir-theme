@@ -1,0 +1,350 @@
+<div class="drawer_overlay">
+</div>
+<div class="cart_drawer">
+  <div class="cart_outer">
+<div class="cart_header">
+  <div class="heading"><h3>Your Cart</h3><span class="close_draw">&times;</span></div>
+  {% if cart.item_count == 0 %}<h4 class="cart_empty">Your Cart is Empty</h4>{% endif %}
+  </div>
+  <div class="cart_body">
+  <div class="item_loop" currency="{{cart.currency.name}}">
+  {% for item in cart.items %}
+  <div class="inner_items"  item-id="{{item.variant.id}}" loop-id="loop{{forloop.index}}">
+    <div class="flex_wrap">
+    <div class="left_sec">
+      <div class="pro_img"><img src="{{item | img_url:'master'}}"></div>
+    </div>
+    <div class="ryt_sec">
+      <h3 class="pro_title">{{ item.product.title }}</h3>
+      {% if item.variant.title contains 'Default' %}
+      {% else %}
+      <div class="variant_options">
+        <ul class="outer_main">
+      {% for option in item.product.options %}
+          <li>
+        {{ option }}: {{ item.variant.options[forloop.index0] }}
+          </li>
+        {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+      <span class="price_main">{{ item.original_price | money }}</span>
+      <div class="quantity_selector">
+        <span class="qty_minus">-</span>
+        <input type="text" name="update-qty" id="qunty_box" value="{{ item.quantity }}" min="1" pattern="[0-9]*">
+        <span class="qty_plus">+</span> 
+      </div>
+    </div>
+    </div>
+  </div>
+  {% endfor %}
+  </div>
+</div>
+    <div class="cart_bottom">
+      <div class="checkout_btn"><a href="/checkout">Checkout<span class="total_price">{{cart.total_price | money }}</span></a></div>
+    </div>
+</div>
+</div>
+
+<script>
+
+  // For GET DATA FROM CART.JS
+  function getcartdata(){
+    $.ajax({
+      type:'GET',
+      url:'/cart.js',
+      dataType:'json',
+      success:function(cart_data){
+        var cart_count = cart_data['item_count'];
+        var currency1 = $('.item_loop').attr('currency');
+        if(currency1 == 'Indian Rupee'){
+         var currency = 'Rs.';
+        }
+        else {
+          var currency = currency1;
+        }
+        var cart_total1 = cart_data['original_total_price'];
+        var cart_total_price = cart_total1/100;
+        $(".checkout_btn span.total_price").text(currency+' '+cart_total_price.toFixed(2));
+        if(cart_count > 0) {
+          $('h4.cart_empty').remove();
+          $('.item_loop').empty();
+            for(var i=0;i<=cart_count;i++){
+            var product_title = cart_data['items'][i]['product_title'];
+            var currency = cart_data['currency'];
+            var item_quantity = cart_data['items'][i]['quantity'];
+            var price = cart_data['items'][i]['final_price'];
+            var main_price = price/100;
+            var variant_id = cart_data['items'][i]['variant_id'];  
+            var image = cart_data['items'][i]['featured_image']['url'];
+           $('.item_loop').append('<div class="inner_items" item-id="'+variant_id+'" loop-id="loop'+i+'"><div class="flex_wrap"><div class="left_sec"><div class="pro_img"><img src="'+image+'"></div></div><div class="ryt_sec"><h3 class="pro_title">'+product_title+'</h3><div class="variant_options"><ul class="outer_main"></ul></div><span class="price_main">'+currency +' '+ main_price.toFixed(2)+'</span><div class="quantity_selector"><span class="qty_minus">-</span><input type="text" id="qunty_box" name="update-qty" value="'+item_quantity+'" min="1" pattern="[0-9]*"><span class="qty_plus">+</span></div></div></div></div>');
+          var variant_names = cart_data['items'][i]['options_with_values'];
+            var k;
+            for(k=0;k<variant_names.length;k++){
+             var variant_name = variant_names[k]['name'];
+              var variant_value = variant_names[k]['value']; 
+               if(variant_value != null ){
+             var variant_html=$('<li>'+variant_name+':'+variant_value+'</li>');
+              $('.inner_items[loop-id="loop'+i+'"] ul.outer_main').append(variant_html);
+               }
+            }
+            }
+         
+           }
+           }
+  });
+      }
+$(document).on('click','span.cart_btn',function(){
+var variant_id =  $(this).attr('id');
+var data = {
+"id": variant_id,
+"quantity": 1
+}
+$.ajax({
+type:'POST',
+url:'/cart/add.js',
+data:data,
+dataType: 'json',
+success: function() { 
+getcartdata();
+$('.cart_drawer').addClass('active');
+$('.drawer_overlay').addClass('cart_open');
+}
+});
+});
+  // FOR UPDATE DATA USING + - WITH UPDATE.JS
+  $(document).on('click','span.qty_plus',function(){
+    var variant_id2 = $(this).closest('.inner_items').attr('item-id');
+    var variant_id = parseInt(variant_id2);
+    var valu = $(this).prev('input[name="update-qty"]').val();
+    valu++;
+    if(valu >= 0){
+      $(this).prev('input[name="update-qty"]').attr("value", valu);
+      var value_main = parseInt(valu);
+      var data = {
+      "id": variant_id,
+      "quantity": value_main
+    };
+  $.ajax({
+        type: 'POST',
+        url: '/cart/change.js',
+        dataType: 'json',
+  		data:data,
+        success: function(){
+         getcartdata();
+        }
+});
+    }
+  });
+  $(document).on('click','span.qty_minus',function(){
+    var variant_id2 = $(this).closest('.inner_items').attr('item-id');
+    var variant_id = parseInt(variant_id2);
+    var valu = $(this).next('input[name="update-qty"]').val();
+    valu--;
+    if(valu >= 1){
+      $(this).next('input[name="update-qty"]').attr("value", valu);
+    var value_main = parseInt(valu);
+      var data = {
+      "id": variant_id,
+      "quantity": value_main
+    };
+  $.ajax({
+        type: 'POST',
+        url: '/cart/change.js',
+        dataType: 'json',
+  		data:data,
+        success: function(){
+         getcartdata();
+        }
+});
+    }
+  });
+
+  $(document).on('click','.site-header__cart',function(){
+$('.cart_drawer').addClass('active');
+$('.drawer_overlay').addClass('cart_open');
+});
+    $(document).on('click','span.close_draw',function(){
+$('.cart_drawer').removeClass('active');
+$('.drawer_overlay').removeClass('cart_open');
+});
+
+
+</script>
+<!-- for send properties,subscription-->
+<script>
+  $(document).on('click','button.puff-add-to-cart',function(){
+    $('.product-options--flavors .product-option--flavor.product-option--selected').each(function(index){
+      var main_index = index;
+      if(main_index == 0 ){
+        $("body").append("<form name='form' class='flavour_form' method='post' action='/cart/add'></form>");
+      }
+      var bundle_val = $('div#flavor-option-selector input:checked').attr('bundle-quantity');
+      var property1 = $('input[name="properties[shipping_interval_unit_type]"]').val();
+      var property2 = $('select[name="properties[shipping_interval_frequency]"]').val();
+      var property3 = $('div#rc_container input[name="properties[subscription_id]"]').val();
+      var main_id = $(this).find('.product-option__wrapper').attr('varnt_id');
+      $(".flavour_form").append("<input type='hidden' class='var_id' name='items["+index+"][id]' value='"+main_id+"'>");
+      $(".flavour_form").append("<input type='hidden' class='var_id' name='items["+index+"][quantity]' value='"+bundle_val+"'>");  
+      if(property1 == undefined){
+      }
+      else {
+        $(".flavour_form").append("<input id='rc_shipping_interval_unit' type='hidden' name='items["+index+"][properties][shipping_interval_unit_type]' value='"+property1+"'>");
+        $(".flavour_form").append("<input id='rc_shipping_interval' type='hidden' name='items["+index+"][properties][shipping_interval_frequency]' value='"+property2+"'>");
+        $(".flavour_form").append("<input id='rc_subscription_id' type='hidden' name='items["+index+"][properties][subscription_id]' value='"+property3+"'>"); 
+      }
+    });
+
+    setTimeout(function(){
+      $.ajax({
+        url:'/cart/add',
+        type:'post',
+        data:$(".flavour_form").serialize(),
+        success:function(res){
+          //alert("Added");
+        }
+      });
+    }, 500);
+  });
+  </script>
+<style>
+.drawer_overlay.cart_open {
+    z-index: 999;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    right: 0;
+    top: 0;
+  transition: .7s;
+    background-color: rgba(0 ,0 ,0, .4);
+}
+    .cart_drawer.active {
+    transform: translateX(0);
+      right:0;
+}
+  .cart_drawer {
+    transition: .7s;
+    height:100%;
+    position: fixed;
+    right: -100%;
+    top: 0;
+    z-index: 999999;
+    background: #fff;
+    max-width: 420px;
+    width:100%;
+    transform: translateX(100%);
+}
+  .cart_drawer .flex_wrap {
+   display:flex;
+   flex-wrap:wrap; 
+  }
+  .cart_drawer .left_sec {
+    padding-right:10px;
+    width: 30%;
+    flex: 0 0 30%;
+    margin: 0;
+}
+.cart_drawer .inner_items {
+    padding-bottom: 15px;
+}
+.cart_drawer .ryt_sec {
+  padding-left:10px;
+    width: 70%;
+    margin: 0;
+    flex: 0 0 70%;
+}
+  .cart-popup-wrapper.critical-hidden {
+    display: none!important;
+}
+  .cart_drawer .quantity_selector {
+    margin-top:10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    max-width: 130px;
+    border: 1px solid #000;
+}
+.cart_drawer .checkout_btn a {
+    background: #bf8069;
+    width: 100%;
+    display: block;
+    text-align: center;
+    height: 45px;
+    line-height: 45px;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.cart_drawer .checkout_btn a span {
+    text-transform: capitalize;
+    padding-left: 15px;
+}
+.cart_drawer .quantity_selector span {
+  height:40px;
+  line-height:40px;
+    width: 25%;
+    text-align: center;
+    flex: 0 0 25%;
+    cursor: pointer;
+}
+.cart_drawer .cart_header .heading {
+ position:relative; 
+}
+.cart_drawer .quantity_selector input {
+  height:40px;
+    width: 50%;
+    flex: 0 0 50%;
+    text-align: center;
+  border:0;
+  padding:0;
+}
+  .cart_drawer span.close_draw {
+    cursor:pointer;
+    position: absolute;
+    right: 20px;
+    top: 40%;
+    transform: translate(0,-50%);
+    font-size: 28px;
+    color: #000;
+    font-weight: 500;
+}
+  .cart_drawer .cart_outer {
+    padding: 10px;
+   position: relative;
+    height: 100%; 
+}
+  .cart_drawer .cart_header .heading h3 {
+    font-size: 28px;
+    font-weight: 600;
+}
+  .cart_drawer .item_loop .inner_items h3.pro_title {
+    font-size: 20px;
+    margin: 0;
+    padding-bottom: 10px;
+    font-weight: 300;
+}
+  .cart_drawer .cart_header {
+    padding-top: 10px;
+}
+  .cart_drawer .cart_bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+}
+  .cart_drawer .item_loop {
+    height: 440px;
+    overflow: auto;
+}
+  .cart_drawer .cart_body {
+    padding-top: 10px;
+}
+.cart_drawer h4.cart_empty {
+    text-align: center;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+</style>
