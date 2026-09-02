@@ -1,11 +1,11 @@
-<select name="selling_plan" style="display:none;">
-            {% for variant in shpng_pro.variants %}
-            <optgroup label="{{ variant.title }}" var_id="{{variant.id}}">
-              {% for allocation in variant.selling_plan_allocations %}
-              <option value="{{ allocation.selling_plan.id }}">
-                {{ allocation.selling_plan.name }}
-              </option>
-              {% endfor %}
-            </optgroup>
-            {% endfor %}
-          </select>
+  <select name="selling_plan" style="display:none;">
+  {% for variant in shpng_pro.variants %}
+  <optgroup label="{{ variant.title }}" var_id="{{variant.id}}">
+  {% for allocation in variant.selling_plan_allocations %}
+  <option value="{{ allocation.selling_plan.id }}">
+  {{ allocation.selling_plan.name }}
+  </option>
+  {% endfor %}
+  </optgroup>
+  {% endfor %}
+  </select>
